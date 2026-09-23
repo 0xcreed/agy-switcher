@@ -12,6 +12,16 @@ import { AgywError } from '../utils/errors.js';
 
 const CREDENTIAL_FILES = ['installation_id', 'user_settings.pb', 'keychain.token', 'antigravity-oauth-token'];
 
+// Profile names become directory names under profilesDir — restrict them to a
+// single safe path segment so `../`-style input can never escape the dir.
+function isValidProfileName(name: string): boolean {
+  return (
+    /^[a-zA-Z0-9._-]+$/.test(name) &&
+    !name.startsWith('.') &&
+    !name.includes('..')
+  );
+}
+
 export class ProfileManager {
   constructor(
     private configStore: ConfigStore,
@@ -127,6 +137,10 @@ export class ProfileManager {
 
   // FR-002
   async addProfile(name: string, cloneFrom?: string): Promise<void> {
+    if (!isValidProfileName(name)) {
+      throw new AgywError('ERR_INVALID_PROFILE_NAME', { name });
+    }
+
     const config = await this.configStore.readConfig();
 
     if (config.profiles[name]) {

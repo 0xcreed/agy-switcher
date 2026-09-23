@@ -1,6 +1,7 @@
 export type ErrorCode =
   | 'ERR_PROFILE_NOT_FOUND'
   | 'ERR_PROFILE_EXISTS'
+  | 'ERR_INVALID_PROFILE_NAME'
   | 'ERR_REMOVE_ACTIVE'
   | 'ERR_REMOVE_LAST'
   | 'ERR_AMBIGUOUS_PROFILE'
@@ -14,6 +15,7 @@ export type ErrorCode =
 const ERROR_MESSAGES: Record<ErrorCode, string> = {
   ERR_PROFILE_NOT_FOUND: "Profile '{name}' không tồn tại. Chạy `agyw profile list` để xem danh sách.",
   ERR_PROFILE_EXISTS: "Profile '{name}' đã tồn tại. Dùng `agyw profile list` để xem.",
+  ERR_INVALID_PROFILE_NAME: "Tên profile '{name}' không hợp lệ. Chỉ dùng chữ, số, '.', '-', '_'; không bắt đầu bằng dấu chấm.",
   ERR_REMOVE_ACTIVE: "Không thể xóa profile đang active. Switch sang profile khác trước: `agyw switch <other>`.",
   ERR_REMOVE_LAST: "Không thể xóa profile cuối cùng. Cần ít nhất 1 profile.",
   ERR_AMBIGUOUS_PROFILE: "Prefix '{name}' khớp nhiều profile: {matches}. Hãy nhập tên đầy đủ.",

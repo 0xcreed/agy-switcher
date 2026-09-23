@@ -262,6 +262,40 @@ describe('ProfileManager.addProfile()', () => {
     });
   });
 
+  it('rejects path-traversal names (../) without writing outside profilesDir', async () => {
+    await expect(manager.addProfile('../escape')).rejects.toMatchObject({
+      code: 'ERR_INVALID_PROFILE_NAME',
+    });
+    await expect(manager.addProfile('..')).rejects.toMatchObject({
+      code: 'ERR_INVALID_PROFILE_NAME',
+    });
+    // Nothing should have been created outside the profiles dir
+    const { access } = await import('fs/promises');
+    await expect(access(join(testRoot, 'escape'))).rejects.toThrow();
+  });
+
+  it('rejects hidden/relative names and names with dot-dot sequences', async () => {
+    await expect(manager.addProfile('.hidden')).rejects.toMatchObject({
+      code: 'ERR_INVALID_PROFILE_NAME',
+    });
+    await expect(manager.addProfile('a..b')).rejects.toMatchObject({
+      code: 'ERR_INVALID_PROFILE_NAME',
+    });
+    await expect(manager.addProfile('with space')).rejects.toMatchObject({
+      code: 'ERR_INVALID_PROFILE_NAME',
+    });
+    await expect(manager.addProfile('a/b')).rejects.toMatchObject({
+      code: 'ERR_INVALID_PROFILE_NAME',
+    });
+  });
+
+  it('accepts valid names with dots, dashes, and underscores', async () => {
+    await manager.addProfile('work.prod-v2_ok');
+    const config = await configStore.readConfig();
+    expect(config.profiles['work.prod-v2_ok']).toBeDefined();
+    expect(config.profiles['work.prod-v2_ok'].path).toBe(join(profilesDir, 'work.prod-v2_ok'));
+  });
+
   it('seeds a fresh installation_id and removes other credential files from the new profile', async () => {
     // Ensure source profile has credential files
     await writeFile(join(profilesDir, 'default', 'installation_id'), 'cred-id', 'utf-8');
